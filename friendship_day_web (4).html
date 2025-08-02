@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendship Day Quiz Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom right, #ffdee9, #b5fffc);
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .container {
+            max-width: 90%;
+            width: 500px;
+            margin: auto;
+            background-color: #ffffffcc;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.2);
+        }
+        h1 {
+            color: #d63384;
+            font-size: 2em;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            background-color: #f06595;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            width: 80%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #d63384;
+        }
+        .question {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        .hidden {
+            display: none;
+        }
+        label {
+            display: block;
+            margin: 8px 0;
+            font-size: 1em;
+        }
+        .emoji-header {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .confetti {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            background-image: url('https://cdn.jsdelivr.net/gh/nikitavoloboev/emoji/confetti.svg');
+            background-repeat: repeat;
+            opacity: 0.2;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bg-music" autoplay loop>
+        <source src="tera_yaar_hoon_main.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="confetti"></div>
+    <div class="container">
+        <div class="emoji-header">🎉💖 Happy Friendship Day! 💖🎉</div>
+        <h1>Best Friend Quiz</h1>
+        <div id="start">
+            <input type="text" id="yourName" placeholder="Your name" />
+            <br><br>
+            <input type="text" id="friendName" placeholder="Friend's name" />
+            <br><br>
+            <button onclick="startQuiz()">Start Quiz</button>
+            <br>
+            <button onclick="toggleMute()" id="muteBtn">🔊 Mute</button>
+        </div>
+
+        <div id="quiz" class="hidden">
+            <div class="question" id="question"></div>
+            <div id="options"></div>
+            <button onclick="nextQuestion()">Next</button>
+        </div>
+
+        <div id="result" class="hidden"></div>
+    </div>
+
+    <script>
+        const audio = document.getElementById("bg-music");
+        const muteBtn = document.getElementById("muteBtn");
+
+        const questions = [
+            {
+                q: "What is your friend's favourite color?",
+                options: ["Red", "Blue", "Green", "Black"],
+                answer: "Black"
+            },
+            {
+                q: "Which game do you both enjoy playing together?",
+                options: ["Chess", "Sending Reels", "Ludo", "Badminton"],
+                answer: "Sending Reels"
+            },
+            {
+                q: "When did you both become friends?",
+                options: ["In school", "In college", "In tuition", "On social media"],
+                answer: "In school"
+            }
+        ];
+
+        let current = 0;
+        let score = 0;
+        let yourName = "";
+        let friendName = "";
+
+        function startQuiz() {
+            yourName = document.getElementById("yourName").value;
+            friendName = document.getElementById("friendName").value;
+            if (!yourName || !friendName) {
+                alert("Please enter both names!");
+                return;
+            }
+            document.getElementById("start").classList.add("hidden");
+            document.getElementById("quiz").classList.remove("hidden");
+            showQuestion();
+
+            audio.play().catch(() => {
+                console.log("User must interact to play audio.");
+            });
+        }
+
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            muteBtn.textContent = audio.muted ? "🔇 Unmute" : "🔊 Mute";
+        }
+
+        function showQuestion() {
+            const q = questions[current];
+            document.getElementById("question").innerText = (current + 1) + ". " + q.q;
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            q.options.forEach(opt => {
+                optionsDiv.innerHTML += `<label><input type="radio" name="option" value="${opt}"> ${opt}</label>`;
+            });
+        }
+
+        function nextQuestion() {
+            const options = document.getElementsByName("option");
+            let selected = "";
+            options.forEach(opt => {
+                if (opt.checked) selected = opt.value;
+            });
+            if (!selected) {
+                alert("Please select an answer!");
+                return;
+            }
+            if (selected === questions[current].answer) score++;
+            current++;
+            if (current < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quiz").classList.add("hidden");
+            const resultDiv = document.getElementById("result");
+            resultDiv.classList.remove("hidden");
+            resultDiv.innerHTML = `<h2>🎈 Quiz Over! 🎈</h2>
+                <p>You scored ${score}/${questions.length}</p>`;
+            if (score === 3) {
+                resultDiv.innerHTML += `<p>✨ You and ${friendName} are true besties! ✨</p>`;
+            } else if (score === 2) {
+                resultDiv.innerHTML += `<p>😊 You know ${friendName} quite well!</p>`;
+            } else {
+                resultDiv.innerHTML += `<p>🤔 Time to know ${friendName} better!</p>`;
+            }
+            resultDiv.innerHTML += `<p>Happy Friendship Day, ${yourName} and ${friendName}! 🌸</p>`;
+            resultDiv.innerHTML += `<button onclick="shareOnWhatsApp()">📤 Share on WhatsApp</button>`;
+        }
+
+        function shareOnWhatsApp() {
+            const message = `🎉 Hey ${friendName}! I made a Friendship Day quiz just for us!\nTry it out and see how well we know each other! 🧠💖`;
+            const link = window.location.href;
+            const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message + "\n" + link)}`;
+            window.open(whatsappURL, "_blank");
+        }
+    </script>
+</body>
+</html>
